@@ -5,7 +5,7 @@ go 1.24.4
 require (
 	github.com/MicahParks/keyfunc/v3 v3.6.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/modelcontextprotocol/go-sdk v0.3.2-0.20250904164007-07b9cee8ccbe
+	github.com/modelcontextprotocol/go-sdk v0.4.0
 )
 
 require (
