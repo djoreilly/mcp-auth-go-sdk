@@ -24,6 +24,7 @@ $ go run .
 $ npx @modelcontextprotocol/inspector@latest
 ```
 Open the `Authentication` dropdown on the left and set:
+
 	URL: `http://localhost:7777/mcp`
 	Client ID: `mcp-inspector`
 	Scope: `email profile`
