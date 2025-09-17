@@ -18,9 +18,10 @@ var (
 	mcpPath           = "/mcp"
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
-	clientID          = "mcp-inspector"
-	scopesSupported   = []string{"email", "profile"}
+	clientID          = "mcp-test-client"
+	scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"}
 	keycloakURL       = "http://localhost:8090/realms/mcp-realm"
+	//keycloakURL       = "http://leap16.kvm:8080/realms/mcp-realm"
 	JWKSURI           = keycloakURL + "/protocol/openid-connect/certs"
 )
 
@@ -70,6 +71,8 @@ func main() {
 		Name:        "echo",
 		Description: "echo input back",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, args args) (*mcp.CallToolResult, any, error) {
+		tokenInfo := auth.TokenInfoFromContext(ctx)
+		log.Printf("Scopes: %v", tokenInfo.Scopes)
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{Text: args.Input},
