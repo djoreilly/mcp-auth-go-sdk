@@ -2,6 +2,7 @@ package main
 
 // copied from
 // https://github.com/modelcontextprotocol/go-sdk/blob/e06cc69dc42064c823e145c827a226da712922ef/internal/oauthex/resource_meta.go
+// won't be needed after https://github.com/modelcontextprotocol/go-sdk/pull/429 is merged
 
 const defaultProtectedResourceMetadataURI = "/.well-known/oauth-protected-resource"
 

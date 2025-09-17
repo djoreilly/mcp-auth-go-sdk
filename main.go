@@ -84,7 +84,7 @@ func main() {
 	// starts a goroutine in background to download JWK Set and keep it refreshed
 	keyFunc, err := keyfunc.NewDefaultCtx(context.Background(), []string{JWKSURI})
 	if err != nil {
-		log.Panicf("creating keyfunc", err)
+		log.Panicf("creating keyfunc: %v", err)
 	}
 
 	verifier := Verifier{
