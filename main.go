@@ -41,7 +41,8 @@ func (v Verifier) verifyJWT(ctx context.Context, tokenString string, _ *http.Req
 	log.Printf("verifier received token: %s", tokenString)
 
 	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience))
+	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience),
+		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
 	if err != nil {
 		// panic to stop mcp inspector retrying forever
 		log.Panicf("err: %v", err)
