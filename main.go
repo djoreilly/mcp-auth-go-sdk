@@ -20,6 +20,7 @@ var (
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
 	clientID          = "mcp-test-client"
+	audience          = "echo-mcp-server"
 	// scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"} // mcp-admin
 	scopesSupported = []string{"mcp:read", "mcp:tools"} // mcp-user
 	keycloakURL     = "http://localhost:8090/realms/mcp-realm"
@@ -35,7 +36,7 @@ func (v Verifier) verifyJWT(ctx context.Context, tokenString string, _ *http.Req
 	log.Printf("verifier received token: %s", tokenString)
 
 	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc)
+	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience))
 	if err != nil {
 		// panic to stop mcp inspector retrying forever
 		log.Panicf("err: %v", err)
