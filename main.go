@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
@@ -19,45 +20,45 @@ var (
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
 	clientID          = "mcp-test-client"
-	scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"}
-	keycloakURL       = "http://localhost:8090/realms/mcp-realm"
-	//keycloakURL       = "http://leap16.kvm:8080/realms/mcp-realm"
-	JWKSURI           = keycloakURL + "/protocol/openid-connect/certs"
+	// scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"} // mcp-admin
+	scopesSupported = []string{"mcp:read", "mcp:tools"} // mcp-user
+	keycloakURL     = "http://localhost:8090/realms/mcp-realm"
+	// keycloakURL = "http://leap16.kvm:8080/realms/mcp-realm"
+	JWKSURI = keycloakURL + "/protocol/openid-connect/certs"
 )
 
-type JWTClaims struct {
-	UserID string   `json:"user_id"`
-	Scopes []string `json:"scopes"`
-	jwt.RegisteredClaims
-}
-
 type Verifier struct {
-	Scopes  []string
-	UserID  string
 	KeyFunc keyfunc.Keyfunc
 }
 
 func (v Verifier) verifyJWT(ctx context.Context, tokenString string, _ *http.Request) (*auth.TokenInfo, error) {
 	log.Printf("verifier received token: %s", tokenString)
-	claims := &JWTClaims{
-		UserID: v.UserID,
-		Scopes: v.Scopes,
-	}
-	token, err := jwt.ParseWithClaims(tokenString, claims, v.KeyFunc.Keyfunc)
+
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc)
 	if err != nil {
 		// panic to stop mcp inspector retrying forever
 		log.Panicf("err: %v", err)
-		return nil, fmt.Errorf("%w: %v", auth.ErrInvalidToken, err)
+		return nil, fmt.Errorf("%v: %w", auth.ErrInvalidToken, err)
 	}
-
-	if claims, ok := token.Claims.(*JWTClaims); ok && token.Valid {
+	for k, v := range claims {
+		log.Printf("claim: %v: %v", k, v)
+	}
+	if token.Valid {
+		expireTime, err := claims.GetExpirationTime()
+		if err != nil {
+			return nil, fmt.Errorf("%v: %w", auth.ErrInvalidToken, err)
+		}
+		scopes, ok := claims["scope"].(string)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert scopes: %w", auth.ErrInvalidToken)
+		}
 		return &auth.TokenInfo{
-			Scopes:     claims.Scopes,
-			Expiration: claims.ExpiresAt.Time,
+			Scopes:     strings.Split(scopes, " "),
+			Expiration: expireTime.Time,
 		}, nil
 	}
-
-	return nil, fmt.Errorf("%w: invalid token claims", auth.ErrInvalidToken)
+	return nil, auth.ErrInvalidToken
 }
 
 func main() {
@@ -91,8 +92,6 @@ func main() {
 	}
 
 	verifier := Verifier{
-		Scopes:  scopesSupported,
-		UserID:  clientID,
 		KeyFunc: keyFunc,
 	}
 
