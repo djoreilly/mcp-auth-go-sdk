@@ -12,6 +12,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/modelcontextprotocol/go-sdk/oauthex"
+)
+
+const (
+	defaultProtectedResourceMetadataURI = "/.well-known/oauth-protected-resource"
 )
 
 var (
@@ -109,7 +114,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")                     // for mcp-inspector
 		w.Header().Set("Access-Control-Allow-Headers", "mcp-protocol-version") // for mcp-inspector
-		prm := &ProtectedResourceMetadata{
+		prm := &oauthex.ProtectedResourceMetadata{
 			Resource:               protectedResource,
 			AuthorizationServers:   []string{keycloakURL},
 			ScopesSupported:        scopesSupported,
