@@ -22,18 +22,19 @@ $ go run .
 ```
 
 ## MCP Inspector
+Use 0.16.7 as 0.16.8 is [broken](https://github.com/modelcontextprotocol/inspector/issues/824).
 ```
-$ npx @modelcontextprotocol/inspector@latest
+$ npx @modelcontextprotocol/inspector@0.16.7
 ```
 Open the `Authentication` dropdown on the left and set:
 
 	Transport Type: `Streamable HTTP`
 	URL: `http://localhost:7777/mcp`
 	Client ID: `mcp-test-client`
-	Scope: `mcp:read mcp:tools mcp:prompts`
+	Scope: `mcp:read mcp:tools`
 	Bearer Token: make sure this is really empty. Select all the `*`s, press delete and press escape.
 
-Presss `Connect` and a browser should popup a form to authenticate with Keycloak.
+Presss `Connect` and a browser should popup a form to authenticate with Keycloak. User `mcp-user/user123` or `mcp-admin/admin123`.
 
 ## Troubleshooting
 If things break, use "Clear OAuth State" from "Open Auth Settings" in Inspector.
