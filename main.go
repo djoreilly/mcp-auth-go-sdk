@@ -24,7 +24,6 @@ var (
 	mcpPath           = "/mcp"
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
-	clientID          = "mcp-test-client"
 	audience          = "echo-mcp-server"
 	// scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"} // mcp-admin
 	scopesSupported = []string{"mcp:read", "mcp:tools"} // mcp-user
@@ -44,7 +43,7 @@ func (v Verifier) verifyJWT(ctx context.Context, tokenString string, _ *http.Req
 	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience),
 		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
 	if err != nil {
-		// panic to stop mcp inspector retrying forever
+		// panic to stop mcp inspector retrying forever. TODO: add rate limiter middleware instead.
 		log.Panicf("err: %v", err)
 		return nil, fmt.Errorf("%v: %w", auth.ErrInvalidToken, err)
 	}
