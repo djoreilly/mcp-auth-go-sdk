@@ -43,8 +43,10 @@ func (v Verifier) verifyJWT(ctx context.Context, tokenString string, _ *http.Req
 	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience),
 		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
 	if err != nil {
-		// panic to stop mcp inspector retrying forever. TODO: add rate limiter middleware instead.
-		log.Panicf("err: %v", err)
+		// Uncomment panic to stop mcp inspector spinning sometimes - it's tedious to kill/restart.
+		// Rate limiting middleware is needed to protect against buggy/misbehaving clients.
+		// See go-sdk examples/server/rate-limiting/.
+		//log.Panicf("err: %v", err)
 		return nil, fmt.Errorf("%v: %w", auth.ErrInvalidToken, err)
 	}
 	for k, v := range claims {
