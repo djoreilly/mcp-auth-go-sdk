@@ -30,8 +30,28 @@ var (
 	scopesSupported = []string{"mcp:read", "mcp:tools"} // mcp-user
 	keycloakURL     = "http://localhost:8090/realms/mcp-realm"
 	// keycloakURL = "http://leap16.kvm:8080/realms/mcp-realm"
-	JWKSURI = keycloakURL + "/protocol/openid-connect/certs"
 )
+
+// getJwksUri gets the jwks_uri from the OpenID Provider configuration information.
+// See https://openid.net/specs/openid-connect-discovery-1_0.html
+func getJwksURI(issuer string) (string, error) {
+	resp, err := http.Get(issuer + "/.well-known/openid-configuration")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	openIDConfig := struct {
+		JwksURI string `json:"jwks_uri"`
+	}{}
+
+	err = json.NewDecoder(resp.Body).Decode(&openIDConfig)
+	if err != nil {
+		return "", err
+	}
+
+	return openIDConfig.JwksURI, nil
+}
 
 type Verifier struct {
 	KeyFunc keyfunc.Keyfunc
@@ -94,8 +114,13 @@ func main() {
 		return server
 	}, nil)
 
+	jwksURI, err := getJwksURI(keycloakURL)
+	if err != nil {
+		log.Fatalf("getting JWKS URI: %v", err)
+	}
+
 	// starts a goroutine in background to download JWK Set and keep it refreshed
-	keyFunc, err := keyfunc.NewDefaultCtx(context.Background(), []string{JWKSURI})
+	keyFunc, err := keyfunc.NewDefaultCtx(context.Background(), []string{jwksURI})
 	if err != nil {
 		log.Panicf("creating keyfunc: %v", err)
 	}
@@ -122,7 +147,7 @@ func main() {
 			AuthorizationServers:   []string{keycloakURL},
 			ScopesSupported:        scopesSupported,
 			BearerMethodsSupported: []string{"header"},
-			JWKSURI:                JWKSURI,
+			JWKSURI:                jwksURI,
 		}
 		if err := json.NewEncoder(w).Encode(prm); err != nil {
 			log.Panic(err)
