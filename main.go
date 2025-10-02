@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
@@ -129,7 +130,11 @@ func main() {
 	})
 
 	log.Print("MCP server listening on ", protectedResource)
-	if err := http.ListenAndServe(httpAddr, nil); err != nil {
+	s := &http.Server{
+		Addr:              httpAddr,
+		ReadHeaderTimeout: 3 * time.Second,
+	}
+	if err := s.ListenAndServe(); err != nil {
 		log.Panic(err)
 	}
 }
