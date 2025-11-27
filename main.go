@@ -138,6 +138,7 @@ func main() {
 	http.HandleFunc(mcpPath, authenticatedHandler.ServeHTTP)
 
 	// handler for resourceMetaURL
+	// TODO: replace with https://github.com/modelcontextprotocol/go-sdk/pull/643 after it's merged
 	http.HandleFunc(defaultProtectedResourceMetadataURI+mcpPath, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")                     // for mcp-inspector
