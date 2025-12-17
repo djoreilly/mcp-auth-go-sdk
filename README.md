@@ -38,7 +38,7 @@ Presss `Connect` and a browser should popup a form to authenticate with Keycloak
 
 ## Troubleshooting
 If things break, use "Clear OAuth State" from "Open Auth Settings" in Inspector.
-Look for errors in the browser console and the Keycloak logs.
+Look for errors in the browser console and the Keycloak logs: `podman logs keycloak-http`.
 
 ```
 $ curl -sv http://localhost:7777/mcp 2>&1 | grep -i auth
@@ -63,4 +63,8 @@ $ curl -s http://localhost:7777/.well-known/oauth-protected-resource/mcp | jq .
     "header"
   ]
 }
+```
+Use tcpflow to see the traffic:
+```
+# tcpflow -c -i lo port 7777
 ```
