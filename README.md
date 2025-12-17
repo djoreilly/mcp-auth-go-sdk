@@ -68,3 +68,4 @@ Use tcpflow to see the traffic:
 ```
 # tcpflow -c -i lo port 7777
 ```
+Use [https://www.jwt.io/](https://www.jwt.io/) to decode JWTs.
