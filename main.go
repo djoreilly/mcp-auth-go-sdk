@@ -137,23 +137,12 @@ func main() {
 	authenticatedHandler := authMiddleware(handler)
 	http.HandleFunc(mcpPath, authenticatedHandler.ServeHTTP)
 
-	// handler for resourceMetaURL
-	// TODO: replace with https://github.com/modelcontextprotocol/go-sdk/pull/643 after it's merged
-	http.HandleFunc(defaultProtectedResourceMetadataURI+mcpPath, func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")                     // for mcp-inspector
-		w.Header().Set("Access-Control-Allow-Headers", "mcp-protocol-version") // for mcp-inspector
-		prm := &oauthex.ProtectedResourceMetadata{
-			Resource:               protectedResource,
-			AuthorizationServers:   []string{keycloakURL},
-			ScopesSupported:        scopesSupported,
-			BearerMethodsSupported: []string{"header"},
-			JWKSURI:                jwksURI,
-		}
-		if err := json.NewEncoder(w).Encode(prm); err != nil {
-			log.Panic(err)
-		}
-	})
+	prm := &oauthex.ProtectedResourceMetadata{
+		Resource:             protectedResource,
+		AuthorizationServers: []string{keycloakURL},
+		ScopesSupported:      scopesSupported,
+	}
+	http.Handle(defaultProtectedResourceMetadataURI+mcpPath, auth.ProtectedResourceMetadataHandler(prm))
 
 	log.Print("MCP server listening on ", protectedResource)
 	s := &http.Server{
