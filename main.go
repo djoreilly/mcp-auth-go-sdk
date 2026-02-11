@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,11 +27,15 @@ var (
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
 	audience          = "echo-mcp-server"
-	// scopesSupported   = []string{"mcp:read", "mcp:tools", "mcp:prompts"} // mcp-admin
-	scopesSupported = []string{"mcp:read", "mcp:tools"} // mcp-user
-	keycloakURL     = "http://localhost:8090/realms/mcp-realm"
+	scopesSupported   = []string{"mcp:tools:read", "mcp:tools:write"}
+	keycloakURL       = "http://localhost:8090/realms/mcp-realm"
 	// keycloakURL = "http://leap16.kvm:8080/realms/mcp-realm"
 )
+
+var requiredToolScopes = map[string][]string{
+	"echo":     {"mcp:tools:read"},
+	"to_upper": {"mcp:tools:read", "mcp:tools:write"},
+}
 
 // getJwksUri gets the jwks_uri from the OpenID Provider configuration information.
 // See https://openid.net/specs/openid-connect-discovery-1_0.html
@@ -90,8 +95,43 @@ func (v Verifier) verifyJWT(_ context.Context, tokenString string, _ *http.Reque
 	return nil, auth.ErrInvalidToken
 }
 
+func userHasRequiredScopes(userScopes []string, requiredScopes []string) bool {
+	for _, requiredScope := range requiredScopes {
+		if !slices.Contains(userScopes, requiredScope) {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
-	server := mcp.NewServer(&mcp.Implementation{Name: "echo", Title: "Echo Server"}, nil)
+	server := mcp.NewServer(&mcp.Implementation{Name: "string utils", Title: "string utils"}, nil)
+
+	filterTools := func(next mcp.MethodHandler) mcp.MethodHandler {
+		return func(ctx context.Context, method string, req mcp.Request) (res mcp.Result, err error) {
+			if method != "tools/list" {
+				return next(ctx, method, req)
+			}
+			resp, err := next(ctx, method, req)
+			if err != nil {
+				return resp, err
+			}
+			tokenInfo := auth.TokenInfoFromContext(ctx)
+			userScopes := tokenInfo.Scopes
+			fullList := resp.(*mcp.ListToolsResult)
+			filteredList := []*mcp.Tool{}
+			for _, tool := range fullList.Tools {
+				requiredScopes := requiredToolScopes[tool.Name]
+				if userHasRequiredScopes(userScopes, requiredScopes) {
+					filteredList = append(filteredList, tool)
+				}
+			}
+			fullList.Tools = filteredList
+			return resp, err
+		}
+	}
+
+	server.AddReceivingMiddleware(filterTools)
 
 	type args struct {
 		Input string `json:"input" jsonschema:"the input to be echoed"`
@@ -106,6 +146,17 @@ func main() {
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{Text: args.Input},
+			},
+		}, nil, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "to_upper",
+		Description: "returns the input string in uppercase",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args args) (*mcp.CallToolResult, any, error) {
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{Text: strings.ToUpper(args.Input)},
 			},
 		}, nil, nil
 	})
@@ -131,7 +182,6 @@ func main() {
 
 	authMiddleware := auth.RequireBearerToken(verifier.verifyJWT, &auth.RequireBearerTokenOptions{
 		ResourceMetadataURL: resourceMetaURL,
-		Scopes:              scopesSupported,
 	})
 
 	authenticatedHandler := authMiddleware(handler)
