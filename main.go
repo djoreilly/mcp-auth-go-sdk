@@ -107,27 +107,25 @@ func userHasRequiredScopes(userScopes []string, requiredScopes []string) bool {
 func main() {
 	server := mcp.NewServer(&mcp.Implementation{Name: "string utils", Title: "string utils"}, nil)
 
+	// middleware to intercept tools/list response and remove tools that user does not scopes for.
 	filterTools := func(next mcp.MethodHandler) mcp.MethodHandler {
-		return func(ctx context.Context, method string, req mcp.Request) (res mcp.Result, err error) {
-			if method != "tools/list" {
-				return next(ctx, method, req)
-			}
+		return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
 			resp, err := next(ctx, method, req)
 			if err != nil {
 				return resp, err
 			}
-			tokenInfo := auth.TokenInfoFromContext(ctx)
-			userScopes := tokenInfo.Scopes
-			fullList := resp.(*mcp.ListToolsResult)
-			filteredList := []*mcp.Tool{}
-			for _, tool := range fullList.Tools {
-				requiredScopes := requiredToolScopes[tool.Name]
-				if userHasRequiredScopes(userScopes, requiredScopes) {
-					filteredList = append(filteredList, tool)
+			if listToolResult, ok := resp.(*mcp.ListToolsResult); ok {
+				userScopes := auth.TokenInfoFromContext(ctx).Scopes
+				filteredTools := []*mcp.Tool{}
+				for _, tool := range listToolResult.Tools {
+					requiredScopes := requiredToolScopes[tool.Name]
+					if userHasRequiredScopes(userScopes, requiredScopes) {
+						filteredTools = append(filteredTools, tool)
+					}
 				}
+				listToolResult.Tools = filteredTools
 			}
-			fullList.Tools = filteredList
-			return resp, err
+			return resp, nil
 		}
 	}
 
