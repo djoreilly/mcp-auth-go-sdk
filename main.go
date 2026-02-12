@@ -129,7 +129,22 @@ func main() {
 		}
 	}
 
-	server.AddReceivingMiddleware(filterTools)
+	checkToolCallScopes := func(next mcp.MethodHandler) mcp.MethodHandler {
+		return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
+			if callToolRequest, ok := req.(*mcp.CallToolRequest); ok {
+				requiredScopes := requiredToolScopes[callToolRequest.Params.Name]
+				userScopes := auth.TokenInfoFromContext(ctx).Scopes
+				if !userHasRequiredScopes(userScopes, requiredScopes) {
+					// NOTE: does not conform with
+					// https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#runtime-insufficient-scope-errors
+					return nil, fmt.Errorf("insufficent scope")
+				}
+			}
+			return next(ctx, method, req)
+		}
+	}
+
+	server.AddReceivingMiddleware(filterTools, checkToolCallScopes)
 
 	type args struct {
 		Input string `json:"input" jsonschema:"the input to be echoed"`
