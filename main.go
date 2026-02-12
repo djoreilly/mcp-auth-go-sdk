@@ -107,7 +107,7 @@ func userHasRequiredScopes(userScopes []string, requiredScopes []string) bool {
 func main() {
 	server := mcp.NewServer(&mcp.Implementation{Name: "string utils", Title: "string utils"}, nil)
 
-	// middleware to intercept tools/list response and remove tools that user does not scopes for.
+	// middleware intercepts tools/list response and removes tools the user doesn't have scopes for.
 	filterTools := func(next mcp.MethodHandler) mcp.MethodHandler {
 		return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
 			resp, err := next(ctx, method, req)
