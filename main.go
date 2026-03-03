@@ -201,9 +201,10 @@ func main() {
 	http.HandleFunc(mcpPath, authenticatedHandler.ServeHTTP)
 
 	prm := &oauthex.ProtectedResourceMetadata{
-		Resource:             protectedResource,
-		AuthorizationServers: []string{keycloakURL},
-		ScopesSupported:      scopesSupported,
+		Resource:               protectedResource,
+		AuthorizationServers:   []string{keycloakURL},
+		ScopesSupported:        scopesSupported,
+		BearerMethodsSupported: []string{"header"},
 	}
 	http.Handle(defaultProtectedResourceMetadataURI+mcpPath, auth.ProtectedResourceMetadataHandler(prm))
 

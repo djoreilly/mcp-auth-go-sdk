@@ -55,9 +55,8 @@ $ curl -s http://localhost:7777/.well-known/oauth-protected-resource/mcp | jq .
   ],
   "jwks_uri": "http://localhost:8090/realms/mcp-realm/protocol/openid-connect/certs",
   "scopes_supported": [
-    "mcp:read",
-    "mcp:tools",
-    "mcp:prompts"
+    "mcp:tools:read",
+    "mcp:tools:write"
   ],
   "bearer_methods_supported": [
     "header"
