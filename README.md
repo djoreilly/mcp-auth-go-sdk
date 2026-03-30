@@ -81,3 +81,46 @@ Use tcpflow to see the traffic:
 # tcpflow -c -i lo port 7777
 ```
 Use [https://www.jwt.io/](https://www.jwt.io/) to decode JWTs.
+
+## Kanidm
+This is an attempt to use [Kanidm](https://kanidm.com/) as the Oauth2 Authorization Server. Follow the [kanidm doc](https://kanidm.github.io/kanidm/stable/installing_the_server.html) to install the Kanidm server.
+
+Create a client:
+```bash
+$ kanidm system oauth2 create mcp-test-client "mcp test client" http://localhost:7777/mcp
+```
+
+Get the client secret:
+```bash
+$ kanidm system oauth2 show-basic-secret mcp-test-client
+yzk94kpwq7qb2gghe6xqz0ujbdpws51asatabg3qqqvjvgqv
+```
+
+Set the client's redirect-url for the [MCP client](https://github.com/djoreilly/mcp-oauth-client/blob/30bfaeb3cf679313a683b22f0cc3b3510b218395/main.go#L55):
+```bash
+$ kanidm system oauth2 add-redirect-url mcp-test-client http://localhost:3142/
+```
+
+[Create an account](https://kanidm.github.io/kanidm/stable/evaluation_quickstart.html#create-an-account-for-yourself), e.g. `doreilly`, a group `mcp`, and add the account to it:
+```bash
+$ kanidm group create mcp
+$ kanidm group add-members mcp doreilly
+```
+
+Add scopes to the `mcp` group (Kanidm doesn't allow `:` in scopes):
+```bash
+$ kanidm system oauth2 update-scope-map mcp-test-client mcp email profile openid
+$ kanidm system oauth2 update-sup-scope-map mcp-test-client mcp mcp_tools_read mcp_tools_write
+```
+
+Start the MCP and run the [client](https://github.com/djoreilly/mcp-oauth-client/tree/main) and authenticate as the account you created:
+```bash
+$ CLIENT_ID=mcp-test-client \
+  CLIENT_SECRET=yzk94kpwq7qb2gghe6xqz0ujbdpws51asatabg3qqqvjvgqv \
+  GOFLAGS="-tags=mcp_go_client_oauth" \
+  go run main.go --server-url http://localhost:7777/mcp \
+Connecting to MCP server...
+Please open the following URL in your browser: https://orion.kvm:8443/ui/oauth2?client_id=mcp-test-client&code_challenge=BquwX8u7MU3pgrBuQJPJFNoBL7w-s7-vkolU4obz0es&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3142&resource=http%3A%2F%2Flocalhost%3A7777%2Fmcp&response_type=code&scope=email+openid+profile&state=6GQLHDBR5MPMFTNRTRXQLG2E3P
+```
+
+In this example the client is setting the `resource` parameter to `http://localhost:7777/mcp` in requests to Kanidm. The MCP spec [says](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#token-audience-binding-and-validation) that the MCP server **MUST** validate that the tokens were issued for them. But Kanimd doesn't support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) and sets the `aud` claim to the `client_id`, and not the `resource` parameter that was sent to it. So this example does not do audience validation.
