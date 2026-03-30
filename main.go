@@ -27,7 +27,7 @@ var (
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
 	audience          = "echo-mcp-server"
-	scopesSupported   = []string{"mcp:tools:read", "mcp:tools:write"}
+	scopesSupported   = []string{"email", "openid", "profile"}
 	authServerURL     = "https://orion.kvm:8443/oauth2/openid/mcp-test-client"
 )
 
