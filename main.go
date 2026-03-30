@@ -67,7 +67,7 @@ func (v Verifier) verifyJWT(_ context.Context, tokenString string, _ *http.Reque
 
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience),
-		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
+		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name, jwt.SigningMethodES256.Name}))
 	if err != nil {
 		// Uncomment panic to stop mcp inspector spinning sometimes - it's tedious to kill/restart.
 		// Rate limiting middleware is needed to protect against buggy/misbehaving clients.
