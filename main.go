@@ -28,8 +28,7 @@ var (
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
 	audience          = "echo-mcp-server"
 	scopesSupported   = []string{"mcp:tools:read", "mcp:tools:write"}
-	keycloakURL       = "http://localhost:8090/realms/mcp-realm"
-	// keycloakURL = "http://leap16.kvm:8080/realms/mcp-realm"
+	authServerURL     = "https://orion.kvm:8443/oauth2/openid/mcp-test-client"
 )
 
 var requiredToolScopes = map[string][]string{
@@ -178,7 +177,7 @@ func main() {
 		return server
 	}, nil)
 
-	jwksURI, err := getJwksURI(keycloakURL)
+	jwksURI, err := getJwksURI(authServerURL)
 	if err != nil {
 		log.Fatalf("getting JWKS URI: %v", err)
 	}
@@ -202,7 +201,7 @@ func main() {
 
 	prm := &oauthex.ProtectedResourceMetadata{
 		Resource:               protectedResource,
-		AuthorizationServers:   []string{keycloakURL},
+		AuthorizationServers:   []string{authServerURL},
 		ScopesSupported:        scopesSupported,
 		BearerMethodsSupported: []string{"header"},
 	}
