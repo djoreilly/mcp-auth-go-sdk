@@ -32,8 +32,8 @@ var (
 )
 
 var requiredToolScopes = map[string][]string{
-	"echo":     {"mcp:tools:read"},
-	"to_upper": {"mcp:tools:read", "mcp:tools:write"},
+	"echo":     {"mcp_tools_read"},
+	"to_upper": {"mcp_tools_read", "mcp_tools_write"},
 }
 
 // getJwksUri gets the jwks_uri from the OpenID Provider configuration information.
