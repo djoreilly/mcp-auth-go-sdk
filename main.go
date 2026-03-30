@@ -26,7 +26,6 @@ var (
 	mcpPath           = "/mcp"
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
-	audience          = "echo-mcp-server"
 	scopesSupported   = []string{"email", "openid", "profile"}
 	authServerURL     = "https://orion.kvm:8443/oauth2/openid/mcp-test-client"
 )
@@ -65,7 +64,7 @@ func (v Verifier) verifyJWT(_ context.Context, tokenString string, _ *http.Reque
 	log.Printf("verifier received token: %s", tokenString)
 
 	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc, jwt.WithAudience(audience),
+	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc,
 		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name, jwt.SigningMethodES256.Name}))
 	if err != nil {
 		// Uncomment panic to stop mcp inspector spinning sometimes - it's tedious to kill/restart.
