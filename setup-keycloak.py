@@ -75,6 +75,42 @@ mcp_write_scope_id = kc.create_client_scope(
     }
 )
 
+# https://www.keycloak.org/securing-apps/mcp-authz-server#_token_audience_binding_and_validation
+print("adding mappers for client scopes for audience claim")
+kc.add_mapper_to_client_scope(
+    mcp_read_scope_id,
+    {
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-audience-mapper",
+        "name": "mapper-for-audience-claim",
+        "config": {
+            "included.client.audience": "",
+            "included.custom.audience": PROTECTED_RESOURCE,
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "true",
+        },
+    },
+)
+
+kc.add_mapper_to_client_scope(
+    mcp_write_scope_id,
+    {
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-audience-mapper",
+        "name": "mapper-for-audience-claim",
+        "config": {
+            "included.client.audience": "",
+            "included.custom.audience": PROTECTED_RESOURCE,
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "true",
+        },
+    },
+)
+
 print(f"creating client: {CLIENT_ID}")
 client_id = kc.create_client(
     {

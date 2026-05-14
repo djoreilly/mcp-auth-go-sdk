@@ -26,7 +26,6 @@ var (
 	mcpPath           = "/mcp"
 	protectedResource = "http://" + httpAddr + mcpPath
 	resourceMetaURL   = "http://" + httpAddr + defaultProtectedResourceMetadataURI + mcpPath
-	audience          = "echo-mcp-server"
 	scopesSupported   = []string{"mcp:tools:read", "mcp:tools:write"}
 	keycloakURL       = "http://localhost:8090/realms/mcp-realm"
 	// keycloakURL = "http://leap16.kvm:8080/realms/mcp-realm"
@@ -67,7 +66,7 @@ func (v Verifier) verifyJWT(_ context.Context, tokenString string, _ *http.Reque
 
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, v.KeyFunc.Keyfunc,
-		// jwt.WithAudience(audience), // TODO: fix
+		jwt.WithAudience(protectedResource),
 		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
 	if err != nil {
 		// Uncomment panic to stop mcp inspector spinning sometimes - it's tedious to kill/restart.

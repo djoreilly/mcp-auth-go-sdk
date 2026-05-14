@@ -3,6 +3,7 @@
 Testing oauth support from [go-sdk](https://github.com/modelcontextprotocol/go-sdk) with Keycloak and [MCP Inspector](https://github.com/modelcontextprotocol/inspector). This is not production ready.
 
 ## Keycloak
+See [Keycloak MCP support](https://www.keycloak.org/securing-apps/mcp-authz-server). Tested with Keycloak v26.2.1.
 ```
 $ podman run -d \
   --name keycloak-http \
