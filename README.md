@@ -23,15 +23,32 @@ $ go run .
 ```
 
 ## MCP client
-Use this [example oauth client](https://github.com/modelcontextprotocol/go-sdk/blob/16d990b0416f63ca4948a5d8ba8f54ac6114b5a9/examples/auth/client/main.go) from the `go-sdk`.
-You can enable `Client authentication` for `mcp-test-client` in the Keycloak UI if you want, and copy the `Client Secret` from the Credientals tab. Then uncomment and edit [these lines](https://github.com/modelcontextprotocol/go-sdk/blob/16d990b0416f63ca4948a5d8ba8f54ac6114b5a9/examples/auth/client/main.go#L90-L95).
+Use [this](https://github.com/djoreilly/mcp-oauth-client/tree/main) MCP client:
 
 ```
-~/go-sdk> GOFLAGS="-tags=mcp_go_client_oauth" go run examples/auth/client/main.go -server_url http://localhost:7777/mcp
-Please open the following URL in your browser: http://localhost:8090/realms/mcp-realm/protocol/openid-connect/auth?client_id=mcp-test-client&code_challenge=qC-3MpNezRuJdex0i01x571fKYA5CLKmYYLzwYsoOd4&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3142&resource=http%3A%2F%2Flocalhost%3A7777%2Fmcp&response_type=code&scope=mcp%3Atools%3Aread+mcp%3Atools%3Awrite&state=TBTXOSHCR73VV43BXRDSKR62NB
-2026/03/05 13:10:36 Tools:
-2026/03/05 13:10:36 - "echo"
-2026/03/05 13:10:36 - "to_upper"
+$ CLIENT_ID=mcp-test-client CLIENT_SECRET=secret ./mcp-cli --server-url http://localhost:7777/mcp
+Connecting to MCP server...
+Please open the following URL in your browser: http://localhost:8090/realms/mcp-realm/protocol/openid-connect/auth?client_id=mcp-test-client&code_challenge=ESpw0QNnZzJ0J56mPTM9v4S9Ia7YrPQuuVCSxFJLa0g&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3142&resource=http%3A%2F%2Flocalhost%3A7777%2Fmcp&response_type=code&scope=mcp%3Atools%3Aread+mcp%3Atools%3Awrite&state=3FOF7URSAHKGTQDCXV3HWAKQEU
+Connected to MCP server
+
+Interactive MCP Client
+Commands:
+  list - List available tools
+  call <tool_name> [args] - Call a tool
+  quit - Exit the client
+
+mcp> list
+
+Available tools:
+1. echo
+   echo input back
+2. to_upper
+   returns the input string in uppercase
+mcp>
+mcp> call echo {"input": "fasdfasdf"}
+
+Tool 'echo' result:
+fasdfasdf
 ```
 
 ## MCP Inspector
