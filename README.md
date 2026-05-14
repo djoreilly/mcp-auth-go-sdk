@@ -1,6 +1,6 @@
 # mcp-auth-go-sdk
 
-Testing oauth support from [go-sdk](https://github.com/modelcontextprotocol/go-sdk) with Keycloak and [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+Testing oauth support from [go-sdk](https://github.com/modelcontextprotocol/go-sdk) with Keycloak and [MCP Inspector](https://github.com/modelcontextprotocol/inspector). This is not production ready.
 
 ## Keycloak
 ```
@@ -12,9 +12,10 @@ $ podman run -d \
   quay.io/keycloak/keycloak:latest start-dev
 ```
 
-Use this [script](https://github.com/djoreilly/mcp-auth-step-by-step/blob/fixes/keycloak/setup_keycloak.py) to setup a realm, client, scopes, scope mapper and some users in Keycloak.
-
-In the Keycloak UI, navigate to the mcp-test-client and set "Web Origins" to `*` and "Valid Redirect URIs" to `http://localhost:6274/oauth/callback*` - these are needed for mcp-inspector.
+Create a realm, client, users, scopes, roles, mappings:
+```
+$ uv run --with python-keycloak setup-keycloak.py
+```
 
 ## MCP server
 ```
@@ -36,6 +37,8 @@ Please open the following URL in your browser: http://localhost:8090/realms/mcp-
 ## MCP Inspector
 This tool is very finicky to use and get working with oauth.
 Use 0.16.7 as 0.16.8 is [broken](https://github.com/modelcontextprotocol/inspector/issues/824).
+
+In the Keycloak UI, navigate to the mcp-test-client and set "Web Origins" to `*` and "Valid Redirect URIs" to `http://localhost:6274/oauth/callback*` - these are needed for mcp-inspector.
 ```
 $ npx @modelcontextprotocol/inspector@0.16.7
 ```
